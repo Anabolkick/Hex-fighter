@@ -1,21 +1,21 @@
 ﻿using System;
-using Hexes;
 using Sirenix.OdinInspector;
+using Units;
 using UnityEngine;
 
 namespace Attributable.Attributes
 {
-    public class HexAttribute : IAttribute
+    public class UnitAttribute : IAttribute
     {
-        [SerializeField] private HexCell _value;
+        [SerializeField] private Unit _value;
         
-        public HexCell Value => _value;
+        public Unit Value => _value;
         
         public event Action<IAttribute> OnChanged;
-        public virtual event Action<HexCell> OnValueChanged;
+        public virtual event Action<Unit> OnValueChanged;
 
         [Button]
-        public void SetValue(HexCell value)
+        public void SetValue(Unit value)
         {
             _value = value;
             OnValueChanged?.Invoke(_value);
@@ -28,7 +28,7 @@ namespace Attributable.Attributes
 
         public void SetInstance(IAttribute attribute)
         {
-            if (attribute is HexAttribute hexAttribute)
+            if (attribute is UnitAttribute hexAttribute)
             {
                 _value = hexAttribute._value;
                 OnChanged?.Invoke(this);
@@ -38,7 +38,7 @@ namespace Attributable.Attributes
 
         public IAttribute CopyInstance()
         {
-            var tempInstance = new HexAttribute();
+            var tempInstance = new UnitAttribute();
 
             tempInstance.SetInstance(this);
 

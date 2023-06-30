@@ -142,7 +142,7 @@ MonoBehaviour:
         Assembly-CSharp]], mscorlib
     - Name: 
       Entry: 12
-      Data: 1
+      Data: 2
     - Name: 
       Entry: 7
       Data: 8|Attributable.Attributes.ColorAttribute, Assembly-CSharp
@@ -163,6 +163,15 @@ MonoBehaviour:
       Data: 1
     - Name: 
       Entry: 8
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 9|Attributable.Attributes.UnitAttribute, Assembly-CSharp
+    - Name: _value
+      Entry: 6
       Data: 
     - Name: 
       Entry: 8

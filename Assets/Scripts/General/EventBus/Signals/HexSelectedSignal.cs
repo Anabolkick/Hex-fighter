@@ -1,6 +1,6 @@
 ﻿using Hexes;
 
-namespace General.Signals
+namespace General.EventBus
 {
     public class HexSelectedSignal
     {

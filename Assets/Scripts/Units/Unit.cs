@@ -1,37 +1,47 @@
+using System;
 using Attributable;
 using Attributable.Attributes;
+using General.EventBus;
+using General.Initialize;
 using UnityEngine;
-using UnityEngine.EventSystems;
+using VContainer;
+using Random = UnityEngine.Random;
 
 namespace Units
 {
-    public class Unit : AttributableMonoBehaviour, IPointerDownHandler 
+    public class Unit : AttributableMonoBehaviour, IInitializable
     {
-        protected virtual void OnEnable()
+        private EventBus _eventBus;
+        
+        private void OnHexGridBuiltHandler(HexGridBuiltSignal signal)
         {
-            var hex = GetAttribute<DynamicsTag, HexAttribute>().Value;
+            var x = Random.Range(0, signal.HexGrid.HexCells.Length);
+            var y =  Random.Range(0, signal.HexGrid.HexCells[x].Length);
+            var randomCell = signal.HexGrid.HexCells[x][y];
             
-            if (hex != null)
-            {
-                transform.parent = hex.transform;
-                transform.localPosition = Vector3.zero;
-            }
+            GetAttribute<DynamicsTag, HexAttribute>().SetValue(randomCell);
+            
+            transform.parent = randomCell.transform;
+            transform.localPosition = Vector3.zero;
+            randomCell.GetAttribute<DynamicsTag, UnitAttribute>().SetValue(this);
         }
 
-        public virtual void OnPointerDown(PointerEventData eventData)
+        [Inject]
+        private void Construct(EventBus eventBus)
         {
-            var selectedAttribute = GetAttribute<DynamicsTag, SelectedAttribute>();
-
-            if (selectedAttribute != null)
-            {
-                // Если юнит уже выбран, снимаем выделение
-                RemoveAttribute<DynamicsTag, SelectedAttribute>();
-            }
-            else
-            {
-                // Если юнит не выбран, устанавливаем атрибут выбранного объекта
-                AddAttribute<DynamicsTag, SelectedAttribute>();
-            }
+            _eventBus = eventBus;
         }
+        
+        public void Initialize()
+        {
+            _eventBus.Subscribe<HexGridBuiltSignal>(OnHexGridBuiltHandler);
+        }
+        
+        protected virtual void OnDisable()
+        {
+            _eventBus.Unsubscribe<HexGridBuiltSignal>(OnHexGridBuiltHandler);
+        }
+
+       
     }
 }

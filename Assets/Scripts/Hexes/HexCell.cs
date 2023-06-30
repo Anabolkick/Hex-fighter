@@ -1,9 +1,6 @@
-using System;
-using System.Linq;
 using Attributable;
 using Attributable.Attributes;
 using General.EventBus;
-using General.Signals;
 using Sirenix.OdinInspector;
 using Units;
 using UnityEngine;
@@ -17,15 +14,48 @@ namespace Hexes
         [SerializeField] private EventTrigger _eventTrigger;
         
         [ReadOnly, ShowInInspector] private Vector2 _coordinates;
+        [ReadOnly, ShowInInspector] private Unit _unit;
 
         private EventBus _eventBus;
-        
         public Vector2 Coordinates => _coordinates;
         
+        private void OnUnitChangedHandler(Unit unit)
+        {
+            _unit = unit;
+        }
+
         [Inject]
         private void Construct(EventBus eventBus)
         {
             _eventBus = eventBus;
+        }
+        
+        public void Initialize()
+        {
+            var onClickEntity = new EventTrigger.Entry();
+            onClickEntity.eventID = EventTriggerType.PointerClick;
+            onClickEntity.callback.AddListener(OnPointerClickHandler);
+            
+            _eventTrigger.triggers.Add(onClickEntity);
+
+            OnAttributeAdded += OnAttributeAddedHandler;
+            OnAttributeRemoved += OnAttributeRemovedHandler;
+
+            GetAttribute<DynamicsTag, UnitAttribute>().OnValueChanged += OnUnitChangedHandler;
+        }
+        
+        
+        private void OnDisable()
+        {
+            foreach (var trigger in _eventTrigger.triggers)
+            {
+                trigger.callback.RemoveAllListeners();
+            }
+            
+            OnAttributeAdded -= OnAttributeAddedHandler;
+            OnAttributeRemoved -= OnAttributeRemovedHandler;
+            
+            GetAttribute<DynamicsTag, UnitAttribute>().OnValueChanged -= OnUnitChangedHandler;
         }
         
         private void OnAttributeAddedHandler(ITag tag, IAttribute attribute)
@@ -51,18 +81,11 @@ namespace Hexes
                 AddAttribute<DynamicsTag, SelectedAttribute>();
                 _eventBus.Invoke(new HexSelectedSignal(this));
             }
-        }
-        
-        public void Initialize()
-        {
-            var onClickEntity = new EventTrigger.Entry();
-            onClickEntity.eventID = EventTriggerType.PointerClick;
-            onClickEntity.callback.AddListener(OnPointerClickHandler);
-            
-            _eventTrigger.triggers.Add(onClickEntity);
 
-            OnAttributeAdded += OnAttributeAddedHandler;
-            OnAttributeRemoved += OnAttributeRemovedHandler;
+            if (_unit == null)
+            {
+                
+            }
         }
         
         public void SetCoordinates(float x, float y)
@@ -70,16 +93,6 @@ namespace Hexes
             _coordinates = new Vector2(x, y);
         }
         
-        private void OnDisable()
-        {
-            foreach (var trigger in _eventTrigger.triggers)
-            {
-                trigger.callback.RemoveAllListeners();
-            }
-            
-            OnAttributeAdded -= OnAttributeAddedHandler;
-            OnAttributeRemoved -= OnAttributeRemovedHandler;
-        }
     }
 }
 
