@@ -1,31 +1,59 @@
 ﻿// CardView.cs
+
+using System.Collections.Generic;
+using Cards;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 public class CardView : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     private Vector3 initialPosition;
-
-    private void Awake()
+    private Vector3 offset;
+    
+    public void OnBeginDrag(PointerEventData eventData)
     {
         initialPosition = transform.position;
     }
 
-    public void OnBeginDrag(PointerEventData eventData)
-    {
-        // Add code to start dragging the card
-        // Store initial position and update the card's visual representation
-    }
-
     public void OnDrag(PointerEventData eventData)
     {
-        // Add code to move the card as it's being dragged
-        // Update the card's visual representation
+        transform.position = eventData.position;
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        // Add code to handle the end of dragging
-        // Check if the card should be played or returned to hand
+        // Check if the card is dropped over a valid target for playing
+        List<RaycastResult> raycastResults = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(eventData, raycastResults);
+
+        bool isValidDrop = true;
+        foreach (RaycastResult result in raycastResults)
+        {
+            if (result.gameObject.CompareTag("HandArea"))
+            {
+                isValidDrop = false;
+                break;
+            }
+        }
+
+        if (isValidDrop)
+        {
+            // Card is dropped over a valid target, play the card
+            transform.position = eventData.pointerCurrentRaycast.worldPosition;
+            // Get the parent CardsController component
+            CardsController cardsController = GetComponentInParent<CardsController>();
+            // Get the corresponding CardData
+            CardData cardData = cardsController.GetCardDataByCardView(this);
+            // Play the card
+            cardsController.PlayCard(cardData);
+            
+            Destroy(this.gameObject); //TODO obj pool
+        }
+        else
+        {
+            // Card is dropped outside a valid target, return the card to the initial position
+            transform.position = initialPosition;
+        }
     }
+
 }

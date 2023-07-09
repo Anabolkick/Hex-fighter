@@ -10,6 +10,6 @@ public class CardBehaviour : ScriptableObject
 
     public void ExecuteAction()
     {
-        // Add code for executing the card's action
+        Debug.Log(cardName);
     }
 }

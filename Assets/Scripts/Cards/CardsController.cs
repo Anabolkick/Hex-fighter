@@ -18,12 +18,15 @@ public class CardsController : MonoBehaviour
     private List<CardData> hand;
     private List<CardBehaviour> playedCards;
 
+    private Dictionary<CardView, CardData> cardViewToDataMap;
+
     private void Start()
     {
         deck = new List<CardBehaviour>(cardConfig.GetCards());
         ShuffleDeck();
         hand = new List<CardData>();
         playedCards = new List<CardBehaviour>();
+        cardViewToDataMap = new Dictionary<CardView, CardData>();
 
         DrawInitialHand();
         UpdateDeckCount();
@@ -73,6 +76,7 @@ public class CardsController : MonoBehaviour
         cardData.cardView = cardView;
 
         hand.Add(cardData);
+        cardViewToDataMap.Add(cardView, cardData);
 
         // Set up the card's visual representation using cardView
 
@@ -82,21 +86,26 @@ public class CardsController : MonoBehaviour
     private void UpdateHandDisplay()
     {
         // Arrange cards in the hand with a slight angle
-        float angleIncrement = 10f;
+        float angleIncrement = -8f;
         float totalAngle = (hand.Count - 1) * angleIncrement;
-        float startX = -(totalAngle / 2f);
+        float startX = -totalAngle / 2f;
+        float distance = 100f;
+
+        float yPos = 5f; 
 
         for (int i = 0; i < hand.Count; i++)
         {
             CardData cardData = hand[i];
-            Vector3 position = handTransform.position + new Vector3(startX + i * angleIncrement, 0f, 0f);
+            float xPos = startX + i * distance;
+            Vector3 position = handTransform.position + new Vector3(xPos, yPos, 0f);
             Quaternion rotation = Quaternion.Euler(0f, 0f, startX + i * angleIncrement);
             cardData.cardView.transform.position = position;
             cardData.cardView.transform.rotation = rotation;
         }
     }
 
-    private void PlayCard(CardData cardData)
+
+    public void PlayCard(CardData cardData)
     {
         // Execute the card's action
         cardData.cardBehaviour.ExecuteAction();
@@ -108,6 +117,15 @@ public class CardsController : MonoBehaviour
         // Update UI and display
         UpdateHandDisplay();
         UpdatePlayedCardsCount();
+    }
+
+    public CardData GetCardDataByCardView(CardView cardView)
+    {
+        if (cardViewToDataMap.ContainsKey(cardView))
+        {
+            return cardViewToDataMap[cardView];
+        }
+        return null;
     }
 
     private void UpdateDeckCount()
